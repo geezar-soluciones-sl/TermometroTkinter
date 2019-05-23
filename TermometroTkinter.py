@@ -34,7 +34,17 @@ class mainApp(Tk):
     
         #StringVar es un objeto al que se pueden asociar eventos
         self.temperatura = StringVar(value="")
-        self.tipoUnidad = StringVar(value = "C")    
+        
+        # El método trace hace un seguimiento. Puede valer w,r,u (escribir, ller o borrar)
+        # En ese caso, llamamos al método y hacemos lo que corresponda
+        self.temperatura.trace("w", self.validarTemperatura)
+        
+        self.tipoUnidad = StringVar(value = "C")
+        
+        #en el caso de radiobutton,
+        # el trace se hace con un método de radiobutton que es "command"
+        # Por tato, en vez de validar aquí lo hacemos en crearDiseño()
+        
         
         self.crearDiseño()
         
@@ -54,8 +64,9 @@ class mainApp(Tk):
         
         # Ponemos el radiobutton del tipo de unidad
         # Definimos los dos primero. Saldrá ya seleccionado el que hemos puesto antes en tipoUnidad
-        self.rbF = ttk.Radiobutton(self, text="Fahrenheit", variable=self.tipoUnidad, value="F").place(x=20, y=80)
-        self.rbC = ttk.Radiobutton(self, text="Celsius   ", variable=self.tipoUnidad, value="C").place(x=20, y=110)
+        # Poniendo lo de selected, al pinchar irá allí y hará lo que digamos
+        self.rbF = ttk.Radiobutton(self, text="Fahrenheit", variable=self.tipoUnidad, value="F", command=self.selected).place(x=20, y=80)
+        self.rbC = ttk.Radiobutton(self, text="Celsius   ", variable=self.tipoUnidad, value="C", command=self.selected).place(x=20, y=110)
         # Y asociamos los dos botones
         
         
@@ -67,6 +78,35 @@ class mainApp(Tk):
         # (radiobutton, button, entry, etc.)
         # TKINTER deja que Windows controle la ventana (estándar)    
         self.mainloop()
+    
+    # Definimos el método tras evento de cambio en Entry (temperatura)
+    # Lleva *args porque se le pueden pasar argumentos (o no, pero al ponerlo no petará)
+    # y como no lo se, pues con el * lo dejo abierto.
+    # En este caso, no sabemos cómo funciona por dentro el trace
+    def validarTemperatura(self, *args):
+        # Si es float, lo mantenemos, pero si no borramos el cambio
+        textoTemp = self.temperatura.get()
+        try:
+            float(textoTemp)   # Si es, lo dejamos
+        except:
+            self.temperatura.set(textoTemp[:-1]) # Si no es float, borramos el último
+            
+    # Aquí ejectuamos código si hay selected en radiobutton,
+    # es decir, si cambiamos de unidades de temperatura
+    #(command.selected lo hemos llamado)
+    def selected(self):
+        resultado = 0
+        unidadFinal = self.tipoUnidad.get()
+        grados = float(self.temperatura.get())
+        
+        if unidadFinal == "F":
+            resultado = grados * 9 / 5 +32
+        elif unidadFinal == "C":
+            resultado = (grados-32) * 5 / 9
+        else:
+            resultado = grados
+        
+        self.temperatura.set(str(resultado))
 
 if __name__ == "__main__":
     app = mainApp()
